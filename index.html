@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KA_Fashion OTD RCA Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Logistics RCA Dashboard</p>
+      <h1>KA_Fashion OTD Decline</h1>
+      <p class="sub">
+        Interactive monitoring + diagnostic dashboard for the final 14-day OTD decline.
+    
+      </p>
+    </div>
+    <div class="hero-badge">
+      <div class="badge-label">Focus window</div>
+      <div class="badge-value">2025-08-16 → 2025-08-29</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel filters">
+      <div class="panel-title-row">
+        <h2>Filters</h2>
+        <button id="resetFilters" class="ghost-btn">Reset</button>
+      </div>
+      <div class="filter-grid">
+        <label>
+          Window
+          <select id="windowFilter">
+            <option value="all">All dates</option>
+            <option value="pre">Pre window</option>
+            <option value="post" selected>Post window</option>
+          </select>
+        </label>
+        <label>
+          Region
+          <select id="regionFilter"></select>
+        </label>
+        <label>
+          Hub
+          <select id="hubFilter"></select>
+        </label>
+        <label>
+          District type
+          <select id="districtFilter"></select>
+        </label>
+        <label>
+          Service type
+          <select id="serviceFilter"></select>
+        </label>
+      </div>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <div class="kpi-label">Orders</div>
+        <div class="kpi-value" id="kpiOrders">-</div>
+        <div class="kpi-note" id="kpiOrdersNote">-</div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-label">OTD</div>
+        <div class="kpi-value" id="kpiOTD">-</div>
+        <div class="kpi-note" id="kpiOTDNote">-</div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-label">SLA gap</div>
+        <div class="kpi-value" id="kpiSLAGap">-</div>
+        <div class="kpi-note" id="kpiSLAGapNote">vs mapped service SLA</div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-label">Failure rate</div>
+        <div class="kpi-value" id="kpiFailure">-</div>
+        <div class="kpi-note" id="kpiFailureNote">-</div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-label">Complaint rate</div>
+        <div class="kpi-value" id="kpiComplaint">-</div>
+        <div class="kpi-note" id="kpiComplaintNote">-</div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-label">Avg delay days</div>
+        <div class="kpi-value" id="kpiDelay">-</div>
+        <div class="kpi-note" id="kpiDelayNote">late shipments only</div>
+      </article>
+    </section>
+
+    <section class="two-col">
+      <article class="panel">
+        <div class="panel-title-row">
+          <h2>Daily trend</h2>
+          <p>OTD vs daily orders</p>
+        </div>
+        <div id="trendChart" class="chart"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-title-row">
+          <h2>Pre vs post comparison</h2>
+          <p>Main service KPIs</p>
+        </div>
+        <div id="comparisonChart" class="chart"></div>
+      </article>
+    </section>
+
+    <section class="two-col">
+      <article class="panel">
+        <div class="panel-title-row">
+          <h2>Late-order contribution by hub</h2>
+          <p>Which hubs explain the decline</p>
+        </div>
+        <div id="hubContributionChart" class="chart"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-title-row">
+          <h2>Utilization vs late rate</h2>
+          <p>Operational strain by hub-day</p>
+        </div>
+        <div id="utilizationChart" class="chart"></div>
+      </article>
+    </section>
+
+    <section class="two-col">
+      <article class="panel">
+        <div class="panel-title-row">
+          <h2>Segment heatmap</h2>
+          <p>OTD by district type × service type</p>
+        </div>
+        <div id="segmentHeatmap" class="chart"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-title-row">
+          <h2>Cycle-time diagnostics</h2>
+          <p>Average processing hours</p>
+        </div>
+        <div id="cycleChart" class="chart"></div>
+      </article>
+    </section>
+
+    <section class="two-col bottom-grid">
+      <article class="panel">
+        <div class="panel-title-row">
+          <h2>Driver table</h2>
+          <p>Prioritize where to act first</p>
+        </div>
+        <div class="table-wrap">
+          <table id="driverTable">
+            <thead>
+              <tr>
+                <th>Hub</th>
+                <th>Orders</th>
+                <th>Late orders</th>
+                <th>Late rate</th>
+                <th>Complaint rate</th>
+                <th>Return rate</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <div class="panel-title-row">
+          <h2>Recommendations</h2>
+          <p>Operational actions for the account</p>
+        </div>
+        <ol class="recommendations">
+          <li><strong>Protect HCM_D7 and HN_LongBien first:</strong> both hubs carry the largest late-order load and should receive temporary capacity support during volume spikes.</li>
+          <li><strong>Prioritize outer-district standard shipments:</strong> this segment shows the weakest OTD and should have earlier cutoffs, tighter exception handling, and better route allocation.</li>
+          <li><strong>Use daily utilization alerts:</strong> flag hub-days where utilization rises while late rate and backlog also rise, so account managers can escalate before SLA drops.</li>
+          <li><strong>Track complaint and return spillover:</strong> service decline is not only an operations KPI issue; it also starts leaking into customer experience metrics.</li>
+          <li><strong>Separate monitoring from RCA:</strong> keep this dashboard for early detection and use the long-form RCA report when an account already breaches SLA.</li>
+        </ol>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Built from the synthetic logistics RCA dataset for KA_Fashion. Static dashboard intended for GitHub Pages.
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
